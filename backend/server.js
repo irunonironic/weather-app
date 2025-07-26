@@ -5,8 +5,9 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const connectDB = require('./config/database');
-
 dotenv.config();
+const weatherRoutes = require('./routes/weather');
+
 
 connectDB();
 
@@ -18,11 +19,12 @@ app.use(cors());
 app.use(helmet()); 
 app.use(morgan('dev')); 
 app.use(compression()); 
-
+app.use('/api/weather',weatherRoutes);
 // Basic route to check if the server is running
 app.get('/', (req, res) => {
     res.send('Weather App API is running...');
 });
+
 
 // Define your port
 const PORT = process.env.PORT || 5000;
