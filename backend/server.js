@@ -8,7 +8,7 @@ const connectDB = require('./config/database');
 dotenv.config();
 const weatherRoutes = require('./routes/weather');
 const airQualityRoutes = require('./routes/airQuality');
-
+const astronomyRoutes = require('./routes/astronomy');
 connectDB();
 
 const app = express();
@@ -21,6 +21,7 @@ app.use(morgan('dev'));
 app.use(compression()); 
 app.use('/api/weather',weatherRoutes);
 app.use('/api/air-quality', airQualityRoutes);
+app.use('/api/astronomy', astronomyRoutes);
 
 // Basic route to check if the server is running
 app.get('/', (req, res) => {
