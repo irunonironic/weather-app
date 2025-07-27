@@ -7,7 +7,7 @@ const compression = require('compression');
 const connectDB = require('./config/database');
 dotenv.config();
 const weatherRoutes = require('./routes/weather');
-
+const airQualityRoutes = require('./routes/airQuality');
 
 connectDB();
 
@@ -20,6 +20,8 @@ app.use(helmet());
 app.use(morgan('dev')); 
 app.use(compression()); 
 app.use('/api/weather',weatherRoutes);
+app.use('/api/air-quality', airQualityRoutes);
+
 // Basic route to check if the server is running
 app.get('/', (req, res) => {
     res.send('Weather App API is running...');
