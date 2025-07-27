@@ -10,6 +10,7 @@ const weatherRoutes = require('./routes/weather');
 const airQualityRoutes = require('./routes/airQuality');
 const astronomyRoutes = require('./routes/astronomy');
 const uvRoutes = require('./routes/uv');
+const pollenRoutes = require('./routes/pollen')
 connectDB();
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/api/weather',weatherRoutes);
 app.use('/api/air-quality', airQualityRoutes);
 app.use('/api/astronomy', astronomyRoutes);
 app.use('/api/uv',uvRoutes);
+app.use('/api/pollen',pollenRoutes);
 
 // Basic route to check if the server is running
 app.get('/', (req, res) => {
