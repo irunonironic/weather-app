@@ -3,10 +3,6 @@ const weatherService = require('../services/weatherService');
 const getCurrentWeatherData = async(req , res) => {
     
     try{
-        console.log('--- Incoming Request Debug ---');
-        console.log('req.query object:', req.query);
-        console.log('Value of req.query.location:', req.query.location);
-        
         const {location , units} = req.query;
         if(!location){
             return res.status(400).json({message: 'Location query parameter is required.'});

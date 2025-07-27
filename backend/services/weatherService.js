@@ -36,8 +36,32 @@ try{
 }
 };
 
+const getCoordinatesByLocation = async (location) => {
+    try{
+        const response = await axios.get(`${OPENWEATHER_BASE_URL}/weather`,{
+             params: {
+            q: location,
+            appid: OPENWEATHER_API_KEY
+    }
+        });
+
+        if(response.data && response.data.coord){
+            return {
+                lat: response.data.coord.lat,
+                lon:response.data.coord.lon
+            };
+        }else{
+            throw new Error('Location not found or coordinates not available');
+        }
+   
+}catch(error){
+    console.error('Error fetching coordinates for location:',error.message ? error.response.data : error.message);
+    throw new Error('Could not find coordinates for the speicified location. Please check the  spelling.')
+}
+};
 
 module.exports = {
     getCurrentWeather,
-    getForecast
+    getForecast,
+    getCoordinatesByLocation
 };
