@@ -10,7 +10,9 @@ const weatherRoutes = require('./routes/weather');
 const airQualityRoutes = require('./routes/airQuality');
 const astronomyRoutes = require('./routes/astronomy');
 const uvRoutes = require('./routes/uv');
-const pollenRoutes = require('./routes/pollen')
+const pollenRoutes = require('./routes/pollen');
+const authRoutes = require('./routes/auth');       
+const { protect } = require('./middleware/auth'); 
 connectDB();
 
 const app = express();
@@ -26,6 +28,7 @@ app.use('/api/air-quality', airQualityRoutes);
 app.use('/api/astronomy', astronomyRoutes);
 app.use('/api/uv',uvRoutes);
 app.use('/api/pollen',pollenRoutes);
+app.use('/api/auth', authRoutes);
 
 // Basic route to check if the server is running
 app.get('/', (req, res) => {
