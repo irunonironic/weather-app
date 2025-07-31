@@ -1,186 +1,200 @@
+// components/WeatherDashboard.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
 import Header from './Header';
 import MainWeatherCard from './MainWeatherCard';
 import WeeklyForecast from './WeeklyForecast';
 import TodaysHighlights from './TodaysHighlights';
+import { weatherAPI, handleAPIError } from '../services/weatherAPI';
 
-// Helper function to get wind direction text (add this inside WeatherDashboard or as a utility)
-const getWindDirection = (deg) => {
-    if (deg > 337.5 || deg <= 22.5) return 'N';
-    if (deg > 22.5 && deg <= 67.5) return 'NE';
-    if (deg > 67.5 && deg <= 112.5) return 'E';
-    if (deg > 112.5 && deg <= 157.5) return 'SE';
-    if (deg > 157.5 && deg <= 202.5) return 'S';
-    if (deg > 202.5 && deg <= 247.5) return 'SW';
-    if (deg > 247.5 && deg <= 292.5) return 'W';
-    if (deg > 292.5 && deg <= 337.5) return 'NW';
-    return '';
-};
+const WeatherDashboard = () => {
+  const [weatherData, setWeatherData] = useState(null);
+  const [forecastData, setForecastData] = useState(null);
+  const [airQualityData, setAirQualityData] = useState(null);
+  const [astronomyData, setAstronomyData] = useState(null);
+  const [uvData, setUVData] = useState(null);
+  const [pollenData, setPollenData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState('New York, NY, USA');
 
-// Helper function for AQI category (add this inside WeatherDashboard or as a utility)
-const getAqiCategory = (aqiValue) => {
-    if (aqiValue <= 50) return 'Good';
-    if (aqiValue <= 100) return 'Moderate';
-    if (aqiValue <= 150) return 'Unhealthy for Sensitive Groups';
-    if (aqiValue <= 200) return 'Unhealthy';
-    if (aqiValue <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
-};
-
-const WeatherDashboard = ({ setAppLocation }) => {
-  const [currentSearchLocation, setCurrentSearchLocation] = useState('Nagpur'); // Default location
-  const [locationInput, setLocationInput] = useState(''); // State for search bar input
-  
-  const [allFetchedData, setAllFetchedData] = useState({ // Single state object for all data
-    currentWeather: null,
-    forecast: null,
-    aqi: null,
-    uv: null,
-    pollen: null,
-    astronomy: null,
-  });
-
-  const [loadingData, setLoadingData] = useState(true);
-  const [errorData, setErrorData] = useState(null);
-
-  useEffect(() => {
-    if (!currentSearchLocation) {
-        setLoadingData(false);
-        return;
-    }
-
-    const fetchAllData = async () => {
-      setLoadingData(true);
-      setErrorData(null);
+  // Fetch all weather data from your backend
+  const fetchWeatherData = async (location = currentLocation) => {
+    try {
+      setLoading(true);
+      setError(null);
       
-      if (setAppLocation) {
-        try {
-          const bgWeatherRes = await axios.get(`http://localhost:8000/api/weather/current?location=${currentSearchLocation}`);
-          const description = bgWeatherRes.data.weather[0].description;
-          setAppLocation(description); // Pass description to App.jsx to determine background
-        } catch (bgErr) {
-          console.warn("Could not set app background based on location:", bgErr.message);
-          setAppLocation('clear'); // Fallback background
-        }
+      // Use the combined function to get all data at once
+      const allData = await weatherAPI.getCompleteWeatherData(location);
+      
+      // Set individual data pieces
+      setWeatherData(allData.current);
+      setForecastData(allData.forecast);
+      setAirQualityData(allData.airQuality);
+      setAstronomyData(allData.astronomy);
+      setUVData(allData.uv);
+      setPollenData(allData.pollen);
+      
+      setCurrentLocation(location);
+      
+      // Check if we have any critical errors
+      if (!allData.current && !allData.forecast) {
+        throw new Error('Failed to fetch essential weather data');
       }
-
-      try {
-        const today = new Date().toISOString().slice(0, 10);
-        const [
-          currentWeatherRes,
-          forecastRes,
-          aqiRes,
-          uvRes,
-          pollenRes,
-          astronomyRes
-        ] = await Promise.all([
-          axios.get(`http://localhost:8000/api/weather/current?location=${currentSearchLocation}`),
-          axios.get(`http://localhost:8000/api/weather/forecast?location=${currentSearchLocation}`),
-          axios.get(`http://localhost:8000/api/air-quality?location=${currentSearchLocation}`),
-          axios.get(`http://localhost:8000/api/uv?location=${currentSearchLocation}`),
-          axios.get(`http://localhost:8000/api/pollen?location=${currentSearchLocation}`),
-          axios.get(`http://localhost:8000/api/astronomy?location=${currentSearchLocation}&date=${today}`)
-        ]);
-        
-        setAllFetchedData({
-          currentWeather: currentWeatherRes.data,
-          forecast: forecastRes.data,
-          aqi: aqiRes.data,
-          uv: uvRes.data,
-          pollen: pollenRes.data,
-          astronomy: astronomyRes.data,
-        });
-
-      } catch (err) {
-        console.error("Error fetching all data for dashboard:", err);
-        setErrorData("Failed to load data for this location. Please try another city.");
-      } finally {
-        setLoadingData(false);
-      }
-    };
-
-    fetchAllData();
-  }, [currentSearchLocation, setAppLocation]);
-
-  const handleLocationSearch = (location) => {
-    if (location.trim()) {
-      setCurrentSearchLocation(location.trim());
-      setLocationInput(''); // Clear input if it were controlled here
+      
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      setError(handleAPIError(error));
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loadingData && !allFetchedData.currentWeather) {
+  // Alternative: Fetch data separately (if you prefer more control)
+  const fetchWeatherDataSeparately = async (location = currentLocation) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch core weather data first (essential)
+      const [current, forecast] = await Promise.all([
+        weatherAPI.getCurrentWeather(location),
+        weatherAPI.getWeatherForecast(location)
+      ]);
+      
+      setWeatherData(current);
+      setForecastData(forecast);
+      
+      // Fetch additional data (non-blocking)
+      Promise.allSettled([
+        weatherAPI.getAirQuality(location),
+        weatherAPI.getAstronomy(location),
+        weatherAPI.getUVIndex(location),
+        weatherAPI.getPollen(location)
+      ]).then(([airQuality, astronomy, uv, pollen]) => {
+        setAirQualityData(airQuality.status === 'fulfilled' ? airQuality.value : null);
+        setAstronomyData(astronomy.status === 'fulfilled' ? astronomy.value : null);
+        setUVData(uv.status === 'fulfilled' ? uv.value : null);
+        setPollenData(pollen.status === 'fulfilled' ? pollen.value : null);
+      });
+      
+      setCurrentLocation(location);
+      
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      setError(handleAPIError(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchWeatherData();
+  }, []);
+
+  // Handle location search
+  const handleLocationSearch = (location) => {
+    fetchWeatherData(location);
+  };
+
+  // Combine all data for the highlights component
+  const getCombinedWeatherData = () => {
+    if (!weatherData) return null;
+    
+    return {
+      ...weatherData,
+      // Add air quality data
+      airQuality: airQualityData?.aqi || weatherData.airQuality || 0,
+      airQualityStatus: airQualityData?.status || 'Unknown',
+      
+      // Add UV data
+      uvIndex: uvData?.index || weatherData.uvIndex || 0,
+      uvStatus: uvData?.status || 'Unknown',
+      
+      // Add astronomy data
+      sunrise: astronomyData?.sunrise || weatherData.sunrise || '6:35 AM',
+      sunset: astronomyData?.sunset || weatherData.sunset || '5:42 PM',
+      
+      // Add pollen data if needed
+      pollenCount: pollenData?.total || 0,
+      pollenStatus: pollenData?.status || 'Unknown',
+    };
+  };
+
+  // Error state
+  if (error) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="text-gray-600 text-lg font-medium mb-2">Loading weather dashboard...</div>
-          <div className="text-gray-500">Fetching data for {currentSearchLocation}</div>
+          <div className="text-red-500 text-lg font-medium mb-2">
+            Unable to load weather data
+          </div>
+          <div className="text-gray-600 mb-4">{error}</div>
+          <div className="space-y-2">
+            <button 
+              onClick={() => fetchWeatherData()}
+              className="block w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Try Again
+            </button>
+            <button 
+              onClick={() => {
+                setError(null);
+                setCurrentLocation('London, UK');
+                fetchWeatherData('London, UK');
+              }}
+              className="block w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Try Different Location
+            </button>
+          </div>
         </div>
       </div>
     );
   }
-
-  if (errorData) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="text-red-500 text-lg font-medium mb-2">Error</div>
-          <div className="text-gray-600 mb-4">{errorData}</div>
-          <button 
-            onClick={() => setCurrentSearchLocation('Mumbai')} // Simple retry by resetting location
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Try Default City
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Destructure data for child components
-  const { currentWeather, forecast, aqi, uv, pollen, astronomy } = allFetchedData;
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center p-0 bg-gray-50 font-poppins text-gray-800">
-      <Header 
-        onLocationSearch={handleLocationSearch} 
-        currentLocation={currentSearchLocation} 
-      />
-      
-      <div className="container mx-auto p-4 md:p-8 mt-20 flex flex-grow">
-        <div className="flex flex-col lg:flex-row w-full gap-6">
-          <div className="lg:w-1/3">
-            {currentWeather && (
-              <MainWeatherCard 
-                weatherData={currentWeather}
-                isLoading={loadingData}
-              />
-            )}
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        <Header 
+          onLocationSearch={handleLocationSearch}
+          currentLocation={currentLocation}
+        />
+        
+        {/* Debug info (remove in production) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded text-xs">
+            <strong>Debug:</strong> Current: {weatherData ? '✓' : '✗'}, 
+            Forecast: {forecastData ? '✓' : '✗'}, 
+            AirQ: {airQualityData ? '✓' : '✗'}, 
+            Astro: {astronomyData ? '✓' : '✗'}, 
+            UV: {uvData ? '✓' : '✗'}, 
+            Pollen: {pollenData ? '✓' : '✗'}
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <MainWeatherCard 
+              weatherData={weatherData}
+              isLoading={loading}
+            />
           </div>
           
-          <div className="lg:w-2/3 flex flex-col gap-6">
-            {forecast && (
-              <WeeklyForecast 
-                forecastData={forecast} // Pass raw forecast data, WeeklyForecast will map it
-                isLoading={loadingData}
-              />
-            )}
+          <div className="lg:col-span-2">
+            <WeeklyForecast 
+              forecastData={forecastData}
+              isLoading={loading}
+            />
             
-            {currentWeather && aqi && uv && pollen && astronomy && ( // Only pass if all data potentially exists for highlights
-              <TodaysHighlights 
-                weatherData={{ // Map data to expected props for TodaysHighlights
-                    currentWeather: currentWeather,
-                    aqi: aqi,
-                    uv: uv,
-                    pollen: pollen,
-                    astronomy: astronomy,
-                    currentLocation: currentSearchLocation, // Pass current location for pollen mock filter
-                }}
-                isLoading={loadingData}
-              />
-            )}
+            <TodaysHighlights 
+              weatherData={getCombinedWeatherData()}
+              airQualityData={airQualityData}
+              uvData={uvData}
+              astronomyData={astronomyData}
+              pollenData={pollenData}
+              isLoading={loading}
+            />
           </div>
         </div>
       </div>
