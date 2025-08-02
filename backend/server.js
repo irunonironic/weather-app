@@ -18,10 +18,12 @@ const { apiLimiter, authLimiter } = require('./middleware/rateLimit')
 connectDB();
 
 const app = express();
-app.use('/api/', apiLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Body parser for URL-encoded data
-app.use(cors()); 
+app.use(cors({
+    origin: 'http://localhost:3000', credentials: true})); 
+app.use('/api/', apiLimiter);
+
 app.use(helmet()); 
 app.use(morgan('dev')); 
 app.use(compression()); 
