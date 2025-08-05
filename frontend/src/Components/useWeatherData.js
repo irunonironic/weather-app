@@ -8,7 +8,7 @@ const useWeatherData = (initialLocation = 'New York') => {
     airQuality: null,
     astronomy: null,
     uv: null,
-    pollen: null
+
   });
   
   const [loading, setLoading] = useState(true);

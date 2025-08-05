@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Sun, Cloud, CloudRain, Wind, Eye, Droplets, Gauge, Sunrise, AlertCircle } from 'lucide-react';
 
 // Component imports
@@ -10,12 +10,20 @@ import TodayHighlights from './TodayHighlights.jsx';
 // Custom hook for weather data
 import useWeatherData from './useWeatherData.js';
 
+
+const tempData = [
+  { day: 'Sunday', temp: 28 },
+  { day: 'Monday', temp: 26 },
+  { day: 'Tuesday', temp: 27 },
+  { day: 'Wednesday', temp: 23 },
+  { day: 'Thursday', temp: 30 },
+  { day: 'Friday', temp: 25 },
+];
+
 const WeatherDashboard = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedTab, setSelectedTab] = useState('Today');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Use the custom hook for weather data
   const {
     weatherData,
     loading,
@@ -35,12 +43,6 @@ const WeatherDashboard = () => {
     getWeeklyForecast
   } = useWeatherData('New York');
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Handle search functionality
   const handleSearch = (e) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
       updateLocation(searchQuery.trim());
@@ -48,7 +50,6 @@ const WeatherDashboard = () => {
     }
   };
 
-  // Map weather conditions to icons
   const getWeatherIcon = (condition) => {
     const conditionLower = condition?.toLowerCase() || '';
     if (conditionLower.includes('rain') || conditionLower.includes('drizzle')) {
@@ -61,20 +62,18 @@ const WeatherDashboard = () => {
     return { icon: Sun, condition: 'sunny' };
   };
 
-  // Prepare weekly forecast data
   const weekData = getWeeklyForecast().map(day => ({
     day: day.day,
     temp: `${day.temp}°`,
     ...getWeatherIcon(day.condition)
   }));
 
-  // Prepare highlights data with real API data
   const highlights = [
     {
       title: 'UV Index',
       gauge: { 
         value: getUVIndex().toString(), 
-        percentage: Math.min(getUVIndex() * 10, 100) 
+        percentage: Math.max(Math.min(getUVIndex() * 10, 100),0.5) 
       },
       status: '',
       statusColor: ''
@@ -117,34 +116,35 @@ const WeatherDashboard = () => {
     }
   ];
 
-  const formatTime = () => {
-    return currentTime.toLocaleDateString('en-US', { 
+  // ✅ Static date display without time
+  const currentDate = new Date();
+  const formatDate = () => {
+    return currentDate.toLocaleDateString('en-US', {
       weekday: 'long',
-      hour: '2-digit',
-      minute: '2-digit'
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
   };
 
-  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6 flex items-center justify-center">
+      <div className="min-h-screen  p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mb-4"></div>
-          <p className="text-white text-xl">Loading weather data...</p>
+          <p className="text-black text-xl">Loading weather data...</p>
         </div>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6 flex items-center justify-center">
+      <div className="min-h-screen   p-6 flex items-center justify-center">
         <div className="text-center bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
           <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <p className="text-white text-xl mb-4">Error loading weather data</p>
-          <p className="text-gray-300 mb-6">{error}</p>
+          <p className="text-black text-xl mb-4">Error loading weather data</p>
+          <p className="text-black mb-6">{error}</p>
           <button 
             onClick={refreshData}
             className="px-6 py-2 bg-white text-black rounded-full hover:bg-gray-200 transition-colors"
@@ -157,7 +157,7 @@ const WeatherDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+    <div className="min-h-screen bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-md  text-black-400 p-6">
       <div className="max-w-7xl mx-auto">
         <Header 
           selectedTab={selectedTab}
@@ -166,7 +166,7 @@ const WeatherDashboard = () => {
           setSearchQuery={setSearchQuery}
           onSearch={handleSearch}
         />
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
             <CurrentWeather
@@ -174,19 +174,19 @@ const WeatherDashboard = () => {
               temperature={getCurrentTemp()}
               condition={getCurrentCondition()}
               precipitation={`${getHumidity()}%`}
-              time={formatTime()}
               weatherData={weatherData.current}
             />
           </div>
           
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 ">
             {weekData.length > 0 && <WeeklyForecast weekData={weekData} />}
             <TodayHighlights highlights={highlights} />
           </div>
+         
         </div>
       </div>
     </div>
   );
 };
 
-export default WeatherDashboard;
+export default WeatherDashboard; 
