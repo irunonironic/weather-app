@@ -6,6 +6,9 @@ const morgan = require('morgan');
 const compression = require('compression');
 const connectDB = require('./config/database');
 dotenv.config();
+
+// Define your port
+const PORT = process.env.PORT || 8000;
 const weatherRoutes = require('./routes/weather');
 const airQualityRoutes = require('./routes/airQuality');
 const astronomyRoutes = require('./routes/astronomy');
@@ -40,8 +43,7 @@ app.get('/', (req, res) => {
 });
 
 
-// Define your port
-const PORT = process.env.PORT || 5000;
+
 
 // Start the server
 app.listen(PORT, () => {
