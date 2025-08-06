@@ -2,7 +2,7 @@ import React from 'react';
 import { MapPin, Sun, CloudRain } from 'lucide-react';
 
 const CurrentWeather = ({ location, temperature, condition, precipitation }) => {
-  // Get today's formatted date
+
   const formattedDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'short',

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Sun, Cloud, CloudRain, Wind, Eye, Droplets, Gauge, Sunrise, AlertCircle } from 'lucide-react';
 
-// Component imports
+
 import Header from './Header.jsx';
 import CurrentWeather from './CurrentWeather.jsx';
 import WeeklyForecast from './WeeklyForecast.jsx';
 import TodayHighlights from './TodayHighlights.jsx';
 
-// Custom hook for weather data
+
 import useWeatherData from './useWeatherData.js';
 
 
@@ -116,7 +116,7 @@ const WeatherDashboard = () => {
     }
   ];
 
-  // ✅ Static date display without time
+
   const currentDate = new Date();
   const formatDate = () => {
     return currentDate.toLocaleDateString('en-US', {

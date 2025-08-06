@@ -23,7 +23,7 @@ const useWeatherData = (initialLocation = 'New York') => {
       const data = await WeatherService.getAllWeatherData(searchLocation);
       setWeatherData(data);
       
-      // Check if any critical errors occurred
+
       if (data.errors.current || data.errors.forecast) {
         setError('Failed to fetch some weather data');
       }
@@ -48,7 +48,7 @@ const useWeatherData = (initialLocation = 'New York') => {
     fetchWeatherData(location);
   }, [fetchWeatherData, location]);
 
-  // Helper functions to extract specific data
+
   const getCurrentTemp = () => {
     return weatherData.current?.main?.temp ? 
       `${Math.round(weatherData.current.main.temp)}°C` : 'N/A';
@@ -128,7 +128,7 @@ const useWeatherData = (initialLocation = 'New York') => {
     location,
     updateLocation,
     refreshData,
-    // Helper functions
+ 
     getCurrentTemp,
     getCurrentCondition,
     getHumidity,
