@@ -24,7 +24,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Body parser for URL-encoded data
 app.use(cors({
-    origin: 'http://localhost:3000', credentials: true})); 
+    origin: process.env.origin,
+    credentials: true
+}));
 app.use('/api/', apiLimiter);
 
 app.use(helmet()); 
