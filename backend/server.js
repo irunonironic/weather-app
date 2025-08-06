@@ -22,6 +22,8 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
+
 app.use(express.urlencoded({ extended: true })); // Body parser for URL-encoded data
 app.use(cors({
     origin: process.env.origin,
