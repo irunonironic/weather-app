@@ -14,7 +14,6 @@
 
   - **Frontend:** React, Vite, Tailwind CSS, Axios
   - **Backend:** Node.js, Express.js, MongoDB, Mongoose
-  - **Authentication:** bcryptjs, jsonwebtoken
   - **Middleware:** `express-rate-limit`, `node-cache`, CORS
   - **APIs:** OpenWeatherMap, Astronomy API, etc.
   - **Deployment:** Vercel (frontend) + Render (backend)
@@ -27,9 +26,7 @@
   - View current weather & 5-day forecast
   - Get Air Quality Index (AQI), UV Index, and Pollen Count
   - Access astronomical data (moon phase, sunrise/sunset)
-  - User authentication (registration & login)
-  - Secure and optimized API with caching and rate limiting
-  - Fully responsive design
+ 
 
 -----
 
@@ -55,7 +52,6 @@ npm install
 # OPENWEATHER_API_KEY=your_openweathermap_api_key
 # ASTRONOMY_API_ID=your_astronomy_api_id
 # ASTRONOMY_API_SECRET=your_astronomy_api_secret
-# POLLEN_API_KEY=your_pollen_api_key
 npm run dev
 ```
 
