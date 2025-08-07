@@ -6,7 +6,7 @@
 ## 🚀 Live Links
 
   - Frontend: [weather-app Vercel](https://weather-app-neon-xi-82.vercel.app/)
-  - Backend API: [Render API](https://weather-app-c53w.onrender.com/api)
+ 
 
 -----
 
